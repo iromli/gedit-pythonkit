@@ -1,0 +1,16 @@
+# Gedit PythonKit Plugin
+
+A toolkit to ease Python development for Gedit 2.
+
+## Features
+
+* Python code completion
+* more to come
+
+## Code Completion
+
+Tap `Ctrl+Space` keys and a popup will appear along with snippets. Scroll down/up or type the desired word to see all available code completion.
+
+## Copyright
+
+PythonKit is released under MIT license. See `LICENSE.txt` for details.
