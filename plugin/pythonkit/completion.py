@@ -67,7 +67,7 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
 
     def do_match(self, context):
         lang = context.get_iter().get_buffer().get_language()
-        if lang.get_id() != 'python':
+        if not lang or lang.get_id() != 'python':
             return False
         return True
 
