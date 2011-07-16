@@ -2,14 +2,14 @@
 
 A toolkit to ease Python development for Gedit 2.
 
-## Features
+## Batteries Included
 
 * Python code completion
-* more to come
+* Django template language-spec
 
 ## Code Completion
 
-Tap `Ctrl+Space` keys and a popup will appear along with snippets. Scroll down/up or type the desired word to see all available code completion.
+Tap `Ctrl+Space` keys and a popup will appear along with snippets. Scroll down/up or type the desired word to see all available code completion. Note that django completion is not supported yet.
 
 ## Copyright
 
