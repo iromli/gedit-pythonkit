@@ -3,9 +3,12 @@
 # Gedit PythonKit plugin
 # Copyright 2011 Isman Firmansyah <izman.romli@gmail.com>
 
+import gconf
 import gobject
 import gtksourceview2 as gsv
+import os
 import re
+import sys
 from gettext import gettext as _
 from parser import complete as python_complete
 
@@ -33,6 +36,8 @@ class PythonProposal(gobject.GObject, gsv.CompletionProposal):
 class PythonProvider(gobject.GObject, gsv.CompletionProvider):
 
     MARK_NAME = 'PythonProviderCompletionMark'
+
+    DJANGO_LOADED = False
 
     def __init__(self, plugin):
         gobject.GObject.__init__(self)
@@ -100,6 +105,8 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         match = textiter.get_text(start)
         line = textiter.get_line()
 
+        self._load_django_settings()
+
         proposals = python_complete(contentfile, match, line)
         if not proposals:
             context.add_proposals(self, [], True)
@@ -113,6 +120,38 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
             buff.create_mark(self.MARK_NAME, start, True)
         else:
             buff.move_mark(mark, start)
+
+    def _load_django_settings(self):
+        """
+        Force django to load its settings for the first time.
+        This djangosettings loader will work only if `settings.py`
+        is found under filebrowser root.
+        Once djangosettings has been loaded, completion will be available
+        in any active python document.
+        """
+        filebrowser_path = self._filebrowser_root().split('file://')[1]
+        if os.path.exists(os.path.join(filebrowser_path, 'settings.py')):
+            if self.DJANGO_LOADED is False:
+                try:
+                    sys.path.append(filebrowser_path)
+                    from django.core.management import setup_environ
+                    import settings
+                    setup_environ(settings)
+                    self.DJANGO_LOADED = True
+                except:
+                    pass
+
+    def _filebrowser_root(self):
+        """
+        Get path to current filebrowser root.
+        """
+        base = u'/apps/gedit-2/plugins/filebrowser/on_load'
+        client = gconf.client_get_default()
+        client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+        path = os.path.join(base, u'virtual_root')
+        val = client.get(path)
+        if val is not None:
+            return val.get_string()
 
 
 gobject.type_register(PythonProposal)
