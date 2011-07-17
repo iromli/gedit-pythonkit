@@ -9,7 +9,9 @@ A toolkit to ease Python development for Gedit 2.
 
 ## Code Completion
 
-Tap `Ctrl+Space` keys and a popup will appear along with snippets. Scroll down/up or type the desired word to see all available code completion. Note that django completion is not supported yet.
+Tap `Ctrl+Space` keys and a popup will appear along with snippets. Scroll down/up or type the desired word to see all available code completion.
+
+Note that Django code completion is a little bit awkward to setup. To activate this feature, you must set the filebrowser root to a directory where `settings.py` is reside. Once this django setting has been loaded, django completion **should** work in any active Python document.
 
 ## Copyright
 
