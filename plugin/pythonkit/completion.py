@@ -94,23 +94,18 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         if start.equal(textiter):
             return
 
+        self.move_mark(buff, start)
+
         contentfile = buff.get_text(*buff.get_bounds())
         match = textiter.get_text(start)
         line = textiter.get_line()
 
-        if not contentfile:
-            context.add_proposals(self, [], True)
-            return
-
-        self.move_mark(buff, start)
-        proposals = self.get_proposals(contentfile, match, line)
-        context.add_proposals(self, proposals, True)
-
-    def get_proposals(self, contentfile, match, line):
         proposals = python_complete(contentfile, match, line)
         if not proposals:
-            return []
-        return [PythonProposal(proposal) for proposal in proposals]
+            context.add_proposals(self, [], True)
+        else:
+            proposals = [PythonProposal(proposal) for proposal in proposals]
+            context.add_proposals(self, proposals, True)
 
     def move_mark(self, buff, start):
         mark = buff.get_mark(self.MARK_NAME)
