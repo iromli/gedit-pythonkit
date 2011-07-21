@@ -39,6 +39,8 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
 
     DJANGO_LOADED = False
 
+    VENV_LOADED = False
+
     def __init__(self, plugin):
         gobject.GObject.__init__(self)
         self.mark = None
@@ -106,6 +108,7 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         line = textiter.get_line()
 
         self._load_django_settings()
+        self._load_virtualenv()
 
         proposals = python_complete(contentfile, match, line)
         if not proposals:
@@ -140,6 +143,19 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
                     self.DJANGO_LOADED = True
                 except:
                     pass
+
+    def _load_virtualenv(self):
+        filebrowser_path = self._filebrowser_root().split('file://')[1]
+        venv_path = os.path.join(filebrowser_path, 'venv')
+        if os.path.exists(venv_path) and self.VENV_LOADED is False:
+            if sys.platform == 'win32':
+                exec_path = os.path.join(venv_path, 'scripts',
+                    'activate_this.py')
+            else:
+                exec_path = os.path.join(venv_path, 'bin', 'activate_this.py')
+            if os.path.exists(exec_path) and os.path.isfile(exec_path):
+                execfile(exec_path, dict(__file__=exec_path))
+                self.VENV_LOADED = True
 
     def _filebrowser_root(self):
         """
