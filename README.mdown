@@ -4,14 +4,18 @@ A toolkit to ease Python development for Gedit 2.
 
 ## Batteries Included
 
-* Python code completion
+* Python (including Django and virtualenv-based) code completion
 * Django template language-spec
 
 ## Code Completion
 
 Tap `Ctrl+Space` keys and a popup will appear along with snippets. Scroll down/up or type the desired word to see all available code completion.
 
-Note that Django code completion is a little bit awkward to setup. To activate this feature, you must set the filebrowser root to a directory where `settings.py` is reside. Once this django setting has been loaded, django completion **should** work in any active Python document.
+### Notes
+
+*   Django code completion is a little bit awkward to setup. To activate this feature, you must set the filebrowser root to a directory where `settings.py` is reside. Once this django setting has been loaded, django completion **should** work in any active Python document, except `settings.py`.
+*   Code completion **should** work even if you're using `virtualenv`. Just make sure you set the filebrowser root to a directory where `venv` (the `virtualenv` directory) is reside. 
+
 
 ## Copyright
 
