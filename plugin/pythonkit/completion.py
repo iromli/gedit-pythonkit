@@ -39,6 +39,8 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
 
     DJANGO_LOADED = False
 
+    VENV_LOADED = False
+
     def __init__(self, plugin):
         gobject.GObject.__init__(self)
         self.mark = None
@@ -105,6 +107,7 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         match = textiter.get_text(start)
         line = textiter.get_line()
 
+        self._load_virtualenv()
         self._load_django_settings()
 
         proposals = python_complete(contentfile, match, line)
@@ -127,19 +130,39 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         This djangosettings loader will work only if `settings.py`
         is found under filebrowser root.
         Once djangosettings has been loaded, completion will be available
-        in any active python document.
+        in any active python document, except `settings.py`.
         """
+        if self.DJANGO_LOADED is True:
+            return
+
         filebrowser_path = self._filebrowser_root().split('file://')[1]
         if os.path.exists(os.path.join(filebrowser_path, 'settings.py')):
-            if self.DJANGO_LOADED is False:
-                try:
-                    sys.path.append(filebrowser_path)
-                    from django.core.management import setup_environ
-                    import settings
-                    setup_environ(settings)
-                    self.DJANGO_LOADED = True
-                except:
-                    pass
+            try:
+                sys.path.append(filebrowser_path)
+                from django.core.management import setup_environ
+                import settings
+                setup_environ(settings)
+                self.DJANGO_LOADED = True
+            except:
+                pass
+
+    def _load_virtualenv(self):
+        if self.VENV_LOADED is True:
+            return
+
+        filebrowser_path = self._filebrowser_root().split('file://')[1]
+        venv_path = os.path.join(filebrowser_path, 'venv')
+
+        if os.path.exists(venv_path):
+            if sys.platform == 'win32':
+                exec_path = os.path.join(venv_path, 'scripts')
+            else:
+                exec_path = os.path.join(venv_path, 'bin')
+
+            exec_path = os.path.join(exec_path, 'activate_this.py')
+            if os.path.exists(exec_path) and os.path.isfile(exec_path):
+                execfile(exec_path, dict(__file__=exec_path))
+                self.VENV_LOADED = True
 
     def _filebrowser_root(self):
         """
