@@ -5,7 +5,6 @@ A toolkit to ease Python development for Gedit 2.
 ## Batteries Included
 
 * Python (including Django and virtualenv-based) code completion
-* Django template language-spec
 
 ## Code Completion
 
