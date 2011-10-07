@@ -3,6 +3,7 @@
 # Gedit PythonKit plugin
 # Copyright 2011 Isman Firmansyah <izman.romli@gmail.com>
 
+import ConfigParser
 import gconf
 import gobject
 import gtksourceview2 as gsv
@@ -37,9 +38,13 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
 
     MARK_NAME = 'PythonProviderCompletionMark'
 
-    DJANGO_LOADED = False
+    DJANGOPROJECT_DIR = None
 
-    VENV_LOADED = False
+    DJANGOPROJECT_LOADED = False
+
+    VIRTUALENV_DIR = None
+
+    VIRTUALENV_LOADED = False
 
     def __init__(self, plugin):
         gobject.GObject.__init__(self)
@@ -107,8 +112,9 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         match = textiter.get_text(start)
         line = textiter.get_line()
 
-        self._load_virtualenv()
-        self._load_django_settings()
+        self.load_configfile()
+        self.load_virtualenv()
+        self.load_django_settings()
 
         proposals = python_complete(contentfile, match, line)
         if not proposals:
@@ -124,47 +130,45 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         else:
             buff.move_mark(mark, start)
 
-    def _load_django_settings(self):
+    def load_django_settings(self):
         """
         Force django to load its settings for the first time.
-        This djangosettings loader will work only if `settings.py`
-        is found under filebrowser root.
-        Once djangosettings has been loaded, completion will be available
-        in any active python document, except `settings.py`.
         """
-        if self.DJANGO_LOADED is True:
+        if self.DJANGOPROJECT_LOADED is True:
             return
 
-        filebrowser_path = self._filebrowser_root().split('file://')[1]
-        if os.path.exists(os.path.join(filebrowser_path, 'settings.py')):
+        if not self.DJANGOPROJECT_DIR:
+            return
+
+        if os.path.exists(os.path.join(self.DJANGOPROJECT_DIR, 'settings.py')):
             try:
-                sys.path.append(filebrowser_path)
+                sys.path.append(self.DJANGOPROJECT_DIR)
                 from django.core.management import setup_environ
                 import settings
                 setup_environ(settings)
-                self.DJANGO_LOADED = True
+                self.DJANGOPROJECT_LOADED = True
             except:
                 pass
 
-    def _load_virtualenv(self):
-        if self.VENV_LOADED is True:
+    def load_virtualenv(self):
+        if self.VIRTUALENV_LOADED is True:
             return
 
-        filebrowser_path = self._filebrowser_root().split('file://')[1]
-        venv_path = os.path.join(filebrowser_path, 'venv')
+        if not self.VIRTUALENV_DIR:
+            return
 
-        if os.path.exists(venv_path):
+        if os.path.exists(self.VIRTUALENV_DIR):
             if sys.platform == 'win32':
-                exec_path = os.path.join(venv_path, 'scripts')
+                exec_path = os.path.join(self.VIRTUALENV_DIR, 'scripts')
             else:
-                exec_path = os.path.join(venv_path, 'bin')
+                exec_path = os.path.join(self.VIRTUALENV_DIR, 'bin')
 
             exec_path = os.path.join(exec_path, 'activate_this.py')
             if os.path.exists(exec_path) and os.path.isfile(exec_path):
                 execfile(exec_path, dict(__file__=exec_path))
-                self.VENV_LOADED = True
+                self.VIRTUALENV_LOADED = True
 
-    def _filebrowser_root(self):
+    def filebrowser_root(self):
         """
         Get path to current filebrowser root.
         """
@@ -174,7 +178,21 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         path = os.path.join(base, u'virtual_root')
         val = client.get(path)
         if val is not None:
-            return val.get_string()
+            return val.get_string().split('file://')[1]
+
+    def load_configfile(self):
+        config_parser = ConfigParser.SafeConfigParser()
+        config_parser.read(os.path.join(self.filebrowser_root(), '.pythonkit'))
+
+        try:
+            self.DJANGOPROJECT_DIR = config_parser.get('pythonkit',
+                'djangoproject_dir')
+            self.VIRTUALENV_DIR = config_parser.get('pythonkit',
+                'virtualenv_dir')
+        except ConfigParser.NoSectionError:
+            pass
+        except ConfigParser.NoOptionError:
+            pass
 
 
 gobject.type_register(PythonProposal)
