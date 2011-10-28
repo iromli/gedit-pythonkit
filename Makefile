@@ -6,6 +6,7 @@ install:
 		mkdir -p $(GEDIT_PLUGIN_DIR);\
 	fi
 	@echo "installing pythonkit plugin";
+	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit*;
 	@cp -R $(PYTHONKIT_DIR)/plugin/pythonkit* $(GEDIT_PLUGIN_DIR);
 	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit/*.py[co];
 
