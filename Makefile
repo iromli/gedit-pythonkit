@@ -1,5 +1,4 @@
-PYTHONKIT_DIR = $(dir $(CURDIR)/$(lastword $(MAKEFILE_LIST)))
-GEDIT_PLUGIN_DIR = ~/.gnome2/gedit/plugins
+GEDIT_PLUGIN_DIR = ~/.local/share/gedit/plugins
 
 install:
 	@if [ ! -d $(GEDIT_PLUGIN_DIR) ]; then \
@@ -7,8 +6,7 @@ install:
 	fi
 	@echo "installing pythonkit plugin";
 	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit*;
-	@cp -R $(PYTHONKIT_DIR)/plugin/pythonkit* $(GEDIT_PLUGIN_DIR);
-	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit/*.py[co];
+	@cp -R pythonkit* $(GEDIT_PLUGIN_DIR);
 
 uninstall:
 	@echo "uninstalling pythonkit plugin";
@@ -17,5 +15,5 @@ uninstall:
 symlink:
 	@echo "symlinking pythonkit plugin";
 	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit*;
-	@ln -s $(PYTHONKIT_DIR)/plugin/pythonkit $(GEDIT_PLUGIN_DIR)/pythonkit;
-	@ln -s $(PYTHONKIT_DIR)/plugin/pythonkit.gedit-plugin $(GEDIT_PLUGIN_DIR)/pythonkit.gedit-plugin;
+	@ln -s pythonkit $(GEDIT_PLUGIN_DIR)/pythonkit;
+	@ln -s pythonkit.plugin $(GEDIT_PLUGIN_DIR)/pythonkit.plugin;

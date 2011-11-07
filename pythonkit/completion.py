@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Gedit PythonKit plugin
-# Copyright 2011 Isman Firmansyah <izman.romli@gmail.com>
-
+from gi.repository import GObject, GtkSource, GLib, Gio
 import ConfigParser
-import gconf
-import gobject
-import gtksourceview2 as gsv
 import os
 import re
 import sys
@@ -14,10 +8,10 @@ from gettext import gettext as _
 from parser import complete as python_complete
 
 
-class PythonProposal(gobject.GObject, gsv.CompletionProposal):
+class PythonProposal(GObject.Object, GtkSource.CompletionProposal):
 
     def __init__(self, proposal):
-        gobject.GObject.__init__(self)
+        GObject.Object.__init__(self)
         self.abbr = proposal['abbr']
         self.word = proposal['word']
         self.info = proposal['info']
@@ -31,10 +25,10 @@ class PythonProposal(gobject.GObject, gsv.CompletionProposal):
     def do_get_info(self):
         if not self.info:
             return _('Info is not available')
-        return gobject.markup_escape_text(self.info)
+        return GLib.markup_escape_text(self.info)
 
 
-class PythonProvider(gobject.GObject, gsv.CompletionProvider):
+class PythonProvider(GObject.Object, GtkSource.CompletionProvider):
 
     MARK_NAME = 'PythonProviderCompletionMark'
 
@@ -47,7 +41,7 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
     VIRTUALENV_LOADED = False
 
     def __init__(self, plugin):
-        gobject.GObject.__init__(self)
+        GObject.Object.__init__(self)
         self.mark = None
         self._plugin = plugin
 
@@ -55,10 +49,9 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         return _('Python')
 
     def do_get_activation(self):
-        return gsv.COMPLETION_ACTIVATION_USER_REQUESTED
+        return GtkSource.CompletionActivation.USER_REQUESTED
 
     def do_activate_proposal(self, proposal, textiter):
-        # TODO: consider to use placeholder similar to snippet's magic
         buff = textiter.get_buffer()
         buff.begin_user_action()
         text = proposal.do_get_text()
@@ -83,16 +76,10 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
             return False
         return True
 
-    def do_get_start_iter(self, context, proposal):
-        buff = context.get_iter().get_buffer()
-        mark = buff.get_mark(self.MARK_NAME)
-        if not mark:
-            return None
-        return buff.get_iter_at_mark(mark)
-
     def do_populate(self, context):
         textiter = context.get_iter()
         buff = textiter.get_buffer()
+
         if not textiter.ends_word or textiter.get_char() == '_':
             return
 
@@ -107,14 +94,15 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
             return
 
         self.move_mark(buff, start)
+        start_bound, end_bound = buff.get_bounds()
 
-        contentfile = buff.get_text(*buff.get_bounds())
+        contentfile = buff.get_text(start_bound, end_bound, False)
         match = textiter.get_text(start)
         line = textiter.get_line()
 
-        self.load_configfile()
-        self.load_virtualenv()
-        self.load_django_settings()
+#        self.load_configfile()
+#        self.load_virtualenv()
+#        self.load_django_settings()
 
         proposals = python_complete(contentfile, match, line)
         if not proposals:
@@ -129,6 +117,7 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
             buff.create_mark(self.MARK_NAME, start, True)
         else:
             buff.move_mark(mark, start)
+
 
     def load_django_settings(self):
         """
@@ -172,13 +161,15 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
         """
         Get path to current filebrowser root.
         """
-        base = u'/apps/gedit-2/plugins/filebrowser/on_load'
-        client = gconf.client_get_default()
-        client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-        path = os.path.join(base, u'virtual_root')
-        val = client.get(path)
-        if val is not None:
-            return val.get_string().split('file://')[1]
+#        base = u'/apps/gedit-2/plugins/filebrowser/on_load'
+#        client = gconf.client_get_default()
+#        client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+#        path = os.path.join(base, u'virtual_root')
+#        val = client.get(path)
+#        if val is not None:
+#            return val.get_string().split('file://')[1]
+#        settings = Gio.Settings.new('org.gnome.gedit.plugins.filebrowser')
+        pass
 
     def load_configfile(self):
         config_parser = ConfigParser.SafeConfigParser()
@@ -195,5 +186,5 @@ class PythonProvider(gobject.GObject, gsv.CompletionProvider):
             pass
 
 
-gobject.type_register(PythonProposal)
-gobject.type_register(PythonProvider)
+GObject.type_fundamental(PythonProposal)
+GObject.type_fundamental(PythonProvider)

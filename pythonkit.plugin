@@ -1,10 +1,9 @@
-[Gedit Plugin]
+[Plugin]
 Loader=python
 Module=pythonkit
-IAge=2
+IAge=3
 Name=Python Kit
 Description=A toolkit to ease Python development
-Authors=Isman Firmansyah <izman.romli@gmail.com>
+Authors=Isman Firmansyah <isman.firmansyah@gmail.com>
 Copyright=Copyright (c) 2011, Isman Firmansyah
 Website=https://github.com/iromli/gedit-pythonkit
-
