@@ -100,9 +100,9 @@ class PythonProvider(GObject.Object, GtkSource.CompletionProvider):
         match = textiter.get_text(start)
         line = textiter.get_line()
 
-#        self.load_configfile()
-#        self.load_virtualenv()
-#        self.load_django_settings()
+        self.load_configfile()
+        self.load_virtualenv()
+        self.load_django_settings()
 
         proposals = python_complete(contentfile, match, line)
         if not proposals:
@@ -158,26 +158,24 @@ class PythonProvider(GObject.Object, GtkSource.CompletionProvider):
                 self.VIRTUALENV_LOADED = True
 
     def filebrowser_root(self):
-        """
-        Get path to current filebrowser root.
-        """
-#        base = u'/apps/gedit-2/plugins/filebrowser/on_load'
-#        client = gconf.client_get_default()
-#        client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-#        path = os.path.join(base, u'virtual_root')
-#        val = client.get(path)
-#        if val is not None:
-#            return val.get_string().split('file://')[1]
-#        settings = Gio.Settings.new('org.gnome.gedit.plugins.filebrowser')
-        pass
+        """ Get path to current filebrowser root. """
+        settings = Gio.Settings.new('org.gnome.gedit.plugins.filebrowser')
+        virtual_root = settings.get_string('virtual-root').split('file://')[1]
+        return virtual_root
 
     def load_configfile(self):
+        conf_file = os.path.join(self.filebrowser_root(), '.pythonkit')
         config_parser = ConfigParser.SafeConfigParser()
-        config_parser.read(os.path.join(self.filebrowser_root(), '.pythonkit'))
-
+        config_parser.read(conf_file)
         try:
             self.DJANGOPROJECT_DIR = config_parser.get('pythonkit',
                 'djangoproject_dir')
+        except ConfigParser.NoSectionError:
+            pass
+        except ConfigParser.NoOptionError:
+            pass
+
+        try:
             self.VIRTUALENV_DIR = config_parser.get('pythonkit',
                 'virtualenv_dir')
         except ConfigParser.NoSectionError:
