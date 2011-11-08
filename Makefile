@@ -11,9 +11,3 @@ install:
 uninstall:
 	@echo "uninstalling pythonkit plugin";
 	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit*;
-
-symlink:
-	@echo "symlinking pythonkit plugin";
-	@rm -rf $(GEDIT_PLUGIN_DIR)/pythonkit*;
-	@ln -s pythonkit $(GEDIT_PLUGIN_DIR)/pythonkit;
-	@ln -s pythonkit.plugin $(GEDIT_PLUGIN_DIR)/pythonkit.plugin;
